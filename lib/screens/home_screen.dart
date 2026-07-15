@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/task_card_widget.dart';
-
+import '../widgets/summary_widget.dart';
+import '../widgets/app_drawer_widget.dart';
 //final TextEditingController controller = TextEditingController();
 
 class HomeScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController controller = TextEditingController();
+  String selectedFilter = "All";
 
   List<Map<String, dynamic>> tasks = [];
 
@@ -32,8 +34,46 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    int totalTasks = tasks.length;
+
+    int completedTasks = tasks.where((task) => task["isDone"] == true).length;
+
+    int pendingTasks = totalTasks - completedTasks;
+
+    List<Map<String, dynamic>> filteredTasks;
+
+    if (selectedFilter == "Completed") {
+      filteredTasks = tasks.where((task) => task["isDone"] == true).toList();
+    } else if (selectedFilter == "Pending") {
+      filteredTasks = tasks.where((task) => task["isDone"] == false).toList();
+    } else {
+      filteredTasks = tasks;
+    }
+
     return Scaffold(
-      drawer: const Drawer(),
+      //drawer: const Drawer(),
+      drawer: AppDrawerWidget(
+        onAllTasks: () {
+          setState(() {
+            selectedFilter = "All";
+          });
+          Navigator.pop(context);
+        },
+
+        onCompletedTasks: () {
+          setState(() {
+            selectedFilter = "Completed";
+          });
+          Navigator.pop(context);
+        },
+
+        onPendingTasks: () {
+          setState(() {
+            selectedFilter = "Pending";
+          });
+          Navigator.pop(context);
+        },
+      ),
 
       appBar: AppBar(title: const Text("TO-DO APP"), centerTitle: true),
 
@@ -76,26 +116,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
             Expanded(
               child: ListView.builder(
-                itemCount: tasks.length,
+                itemCount: filteredTasks.length,
                 itemBuilder: (context, index) {
                   return TaskCardWidget(
-                    title: tasks[index]["title"],
-                    isDone: tasks[index]["isDone"],
+                    title: filteredTasks[index]["title"],
+                    isDone: filteredTasks[index]["isDone"],
 
                     onDelete: () {
                       setState(() {
-                        tasks.removeAt(index);
+                        tasks.remove(filteredTasks.removeAt(index));
                       });
                     },
 
                     onToggle: (value) {
                       setState(() {
-                        tasks[index]["isDone"] = value!;
+                        filteredTasks[index]["isDone"] = value!;
                       });
                     },
                   );
                 },
               ),
+            ),
+            SummaryWidget(
+              totalTasks: totalTasks,
+              pendingTasks: pendingTasks,
+              completedTasks: completedTasks,
             ),
           ],
         ),
