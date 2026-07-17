@@ -3,6 +3,7 @@ import '../widgets/search_bar_widget.dart';
 import '../widgets/task_card_widget.dart';
 import '../widgets/summary_widget.dart';
 import '../widgets/app_drawer_widget.dart';
+import '../models/task_model.dart';
 //final TextEditingController controller = TextEditingController();
 
 class HomeScreen extends StatefulWidget {
@@ -16,7 +17,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController controller = TextEditingController();
   String selectedFilter = "All";
 
-  List<Map<String, dynamic>> tasks = [];
+  //List<Map<String, dynamic>> tasks = [];
+
+  List<Task> tasks = [];
 
   /*void addTask() {
     print(controller.text);
@@ -26,9 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (controller.text.isEmpty) return;
 
     setState(() {
-      tasks.add({"title": controller.text, "isDone": false});
+      //tasks.add({"title": controller.text, "isDone": false});
+      //});
+      tasks.add(Task(title: controller.text, isDone: false));
     });
-
     controller.clear();
   }
 
@@ -36,16 +40,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     int totalTasks = tasks.length;
 
-    int completedTasks = tasks.where((task) => task["isDone"] == true).length;
+    int completedTasks = tasks.where((task) => task.isDone == true).length;
 
     int pendingTasks = totalTasks - completedTasks;
 
-    List<Map<String, dynamic>> filteredTasks;
+    //List<Map<String, dynamic>> filteredTasks;
+    List<Task> filteredTasks = [];
 
     if (selectedFilter == "Completed") {
-      filteredTasks = tasks.where((task) => task["isDone"] == true).toList();
+      filteredTasks = tasks.where((task) => task.isDone == true).toList();
     } else if (selectedFilter == "Pending") {
-      filteredTasks = tasks.where((task) => task["isDone"] == false).toList();
+      filteredTasks = tasks.where((task) => task.isDone == false).toList();
     } else {
       filteredTasks = tasks;
     }
@@ -119,8 +124,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: filteredTasks.length,
                 itemBuilder: (context, index) {
                   return TaskCardWidget(
-                    title: filteredTasks[index]["title"],
-                    isDone: filteredTasks[index]["isDone"],
+                    title: filteredTasks[index].title,
+                    isDone: filteredTasks[index].isDone,
 
                     onDelete: () {
                       setState(() {
@@ -130,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     onToggle: (value) {
                       setState(() {
-                        filteredTasks[index]["isDone"] = value!;
+                        filteredTasks[index].isDone = value!;
                       });
                     },
                   );
