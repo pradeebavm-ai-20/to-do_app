@@ -1,3 +1,4 @@
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/material.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/task_card_widget.dart';
@@ -19,7 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //List<Map<String, dynamic>> tasks = [];
 
-  List<Task> tasks = [];
+  //List<Task> tasks = [];
+  late Box<Task> taskBox;
 
   /*void addTask() {
     print(controller.text);
@@ -31,16 +33,25 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       //tasks.add({"title": controller.text, "isDone": false});
       //});
-      tasks.add(Task(title: controller.text, isDone: false));
+      taskBox.add(Task(title: controller.text, isDone: false));
     });
     controller.clear();
   }
 
   @override
-  Widget build(BuildContext context) {
-    int totalTasks = tasks.length;
+  void initState() {
+    super.initState();
 
-    int completedTasks = tasks.where((task) => task.isDone == true).length;
+    taskBox = Hive.box<Task>("tasks");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    int totalTasks = taskBox.length;
+
+    int completedTasks = taskBox.values
+        .where((task) => task.isDone == true)
+        .length;
 
     int pendingTasks = totalTasks - completedTasks;
 
@@ -48,11 +59,15 @@ class _HomeScreenState extends State<HomeScreen> {
     List<Task> filteredTasks = [];
 
     if (selectedFilter == "Completed") {
-      filteredTasks = tasks.where((task) => task.isDone == true).toList();
+      filteredTasks = taskBox.values
+          .where((task) => task.isDone == true)
+          .toList();
     } else if (selectedFilter == "Pending") {
-      filteredTasks = tasks.where((task) => task.isDone == false).toList();
+      filteredTasks = taskBox.values
+          .where((task) => task.isDone == false)
+          .toList();
     } else {
-      filteredTasks = tasks;
+      filteredTasks = taskBox.values.toList();
     }
 
     return Scaffold(
@@ -129,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     onDelete: () {
                       setState(() {
-                        tasks.remove(filteredTasks.removeAt(index));
+                        taskBox.getAt(index)?.delete();
                       });
                     },
 
@@ -144,8 +159,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SummaryWidget(
               totalTasks: totalTasks,
-              pendingTasks: pendingTasks,
               completedTasks: completedTasks,
+              pendingTasks: pendingTasks,
             ),
           ],
         ),
